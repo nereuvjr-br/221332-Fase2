@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download NLP assets
+        run: |
+          python -m spacy download en_core_web_sm
+          python - <<'PY'
+          import nltk
+          for package in ("wordnet", "omw-1.4", "punkt", "punkt_tab"):
+              nltk.download(package, quiet=True)
+          PY
+
+      - name: Validate Python files
+        run: python -m compileall api.py preprocessing.py
+
+      - name: Run tests
+        run: pytest -q
+
+      - name: Build Docker image
+        run: docker build --platform linux/amd64 -t 221332-fase2-api:ci .

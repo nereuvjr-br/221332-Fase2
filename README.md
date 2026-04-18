@@ -1,106 +1,128 @@
-# 221332 - PROJETAR APLICAÇÕES BASEADAS EM IA NA NUVEM
+# 221332 - Projetar Aplicacoes Baseadas em IA na Nuvem
 
-## Projeto Fase 1 — Entrega Final
+## Fase 2
 
-Este repositório contém a implementação da **Fase 1** do projeto da disciplina de Projetar Aplicações Baseadas em IA na Nuvem. O objetivo principal é o desenvolvimento de uma API REST funcional, estruturada para o processamento de Processamento de Linguagem Natural (NLP) e preparada para integração com modelos de análise de sentimento.
+Este repositorio contem a evolucao da API da fase 1 para atender os requisitos da fase 2:
 
----
+- API REST documentada com FastAPI
+- autenticacao por chave de API
+- containerizacao com Docker
+- pipeline de CI com GitHub Actions
+- deploy manual para Heroku usando imagem publicada no Docker Hub
 
-### Instituição:
-*   **Faculdade**: UNIFACISA
-*   **Curso**: Inteligência Artificial
-*   **Professor**: Matheus Batista Silva
+## Integrantes
 
-### Equipe:
-*   Alysson Leandro Nascimento de Oliveira
-*   Edcarla Sousa de Jesus
-*   Nereu Necholson Vieira de Lacerda Júnior
+- Alysson Leandro Nascimento de Oliveira
+- Edcarla Sousa de Jesus
+- Nereu Necholson Vieira de Lacerda Junior
 
----
+## Estrutura
 
-## 🚀 Tecnologias Utilizadas
+- `api.py`: aplicacao FastAPI e rotas
+- `preprocessing.py`: pipeline de NLP
+- `dataset_tmdb_completo.csv`: base usada pela API
+- `221332_PROJETAR_APLICACOES_BASEADAS_EM_IA_NA_NUVEM.ipynb`: notebook da entrega
+- `Dockerfile`: imagem da aplicacao
+- `.github/workflows/ci.yml`: build e testes
+- `.github/workflows/deploy-heroku.yml`: publicacao no Docker Hub e deploy manual no Heroku
 
-A aplicação foi desenvolvida utilizando as seguintes bibliotecas e frameworks:
+## Requisitos
 
-*   **[FastAPI](https://fastapi.tiangolo.com/)**: Framework web moderno e de alta performance para construção de APIs com Python.
-*   **[Uvicorn](https://www.uvicorn.org/)**: Servidor ASGI para execução da API.
-*   **[NLTK](https://www.nltk.org/)**: Ferramentas para tokenização, stemming (Porter) e lemmatization (WordNet).
-*   **[spaCy](https://spacy.io/)**: Processamento industrial de NLP, utilizado para análise sintática (POS Tagging).
-*   **[TextBlob](https://textblob.readthedocs.io/en/dev/)**: Processamento de dados textuais para análise inicial de polaridade e subjetividade (Léxico).
-*   **[Scikit-Learn](https://scikit-learn.org/)**: Utilizado para a etapa de vetorização (TF-IDF).
-*   **[Pandas](https://pandas.pydata.org/)**: Manipulação do dataset TMDB para extração de sinopses.
+- Python 3.11+
+- Docker
 
----
+Instalacao local:
 
-## 📋 Requisitos da Fase 1
+```bash
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+python api.py
+```
 
-Conforme as diretrizes do projeto, foram implementados:
+## Variaveis de ambiente
 
-1.  **API REST Funcional**: Desenvolvida em Python com FastAPI.
-2.  **Preparação para Análise de Sentimento**: Integração de um pipeline completo de NLP que prepara o dado bruto para classificação.
-3.  **Método GET**: Implementado para verificação de status e fornecimento de dados aleatórios.
-4.  **Método POST**: Implementado para processamento e análise técnica de uma sinopse fornecida pelo usuário.
+- `API_KEY`: chave usada nas rotas protegidas
+- `PORT`: porta da aplicacao
+- `DATASET_PATH`: caminho alternativo para o dataset
 
----
+Se `API_KEY` nao for definida, a aplicacao usa `dev-api-key` para facilitar testes locais.
 
-## 🛠️ Como Executar o Projeto
+## Execucao local
 
-1.  **Clone o repositório**:
-    ```bash
-    git clone [URL_DO_REPOSITORIO]
-    cd [NOME_DA_PASTA]
-    ```
+```bash
+$env:API_KEY="minha-chave"
+python api.py
+```
 
-2.  **Instale as dependências**:
-    ```bash
-    pip install fastapi uvicorn spacy nltk textblob scikit-learn pandas
-    ```
+Documentacao Swagger:
 
-3.  **Baixe os modelos necessários**:
-    ```bash
-    python -m spacy download en_core_web_sm
-    ```
+- `http://localhost:8000/docs`
 
-4.  **Inicie a API**:
-    ```bash
-    python api.py
-    ```
-    A API estará disponível em `http://localhost:8000`. A documentação interativa (Swagger) pode ser acessada em `http://localhost:8000/docs`.
+## Executando com Docker
 
----
+Build:
 
-## 📡 Endpoints da API
+```bash
+docker build -t 221332-fase2-api .
+```
 
-### `GET /`
-Verifica a disponibilidade da API e retorna informações básicas sobre o dataset.
-*   **Resposta**: JSON com status e total de filmes disponíveis.
+Run:
 
-### `GET /filme-aleatorio`
-Retorna um filme aleatório do dataset `dataset_tmdb_completo.csv`.
-*   **Resposta**: JSON com título, sinopse (PT) e sinopse enriquecida (EN).
+```bash
+docker run -p 8000:8000 -e PORT=8000 -e API_KEY=minha-chave 221332-fase2-api
+```
 
-### `POST /analisar`
-Recebe um texto (sinopse) e executa o pipeline de NLP completo.
-*   **Corpo da Requisição**:
-    ```json
-    {
-      "texto": "The movie was an incredible journey through space."
-    }
-    ```
-*   **Processamento Realizado**:
-    *   **Morfologia**: Tokenização, Stemming e Lematização.
-    *   **Sintaxe**: Part-Of-Speech (POS) Tagging e Dependências Sintáticas.
-    *   **Vetorização**: Conversão do texto em vetor TF-IDF.
-    *   **Análise Inicial**: Classificação de polaridade (Positivo, Negativo ou Neutro).
+## Endpoints
 
----
+Publicos:
 
-## 📂 Estrutura do Projeto
+- `GET /`
+- `GET /health`
 
-*   `api.py`: Ponto de entrada da aplicação FastAPI e definição das rotas.
-*   `preprocessing.py`: Lógica central do pipeline de NLP, contendo as funções de processamento.
-*   `221332_PROJETAR_APLICACOES_BASEADAS_EM_IA_NA_NUVEM.ipynb`: Notebook de desenvolvimento e experimentação das técnicas de IA. ([Versão Google Colab](https://colab.research.google.com/drive/1qi6sDe4a3t-5CV7Tyig3NWs24s3pM7VP?usp=sharing))
-*   `dataset_tmdb_completo.csv`: Dataset base para sugestão de filmes.
+Protegidos com header `X-API-Key`:
 
----
-> Projeto desenvolvido para a disciplina de **Projetar Aplicações Baseadas em IA na Nuvem** - 2026.
+- `GET /filme-aleatorio`
+- `POST /analisar`
+
+Exemplo de chamada:
+
+```bash
+curl -X POST "http://localhost:8000/analisar" ^
+  -H "Content-Type: application/json" ^
+  -H "X-API-Key: minha-chave" ^
+  -d "{\"texto\":\"The movie was amazing\"}"
+```
+
+## GitHub Actions
+
+### CI
+
+O workflow `ci.yml`:
+
+- instala as dependencias
+- baixa os recursos de NLP
+- valida os arquivos Python
+- roda os testes
+- monta a imagem Docker
+
+### Deploy manual
+
+O workflow `deploy-heroku.yml`:
+
+- publica a imagem `latest` no Docker Hub
+- configura a stack `container` no Heroku
+- envia a imagem para `registry.heroku.com`
+- faz o release manual via `workflow_dispatch`
+
+## GitHub Secrets necessarios
+
+- `DOCKERHUB_USERNAME`
+- `DOCKERHUB_TOKEN`
+- `HEROKU_API_KEY`
+- `HEROKU_EMAIL`
+- `HEROKU_APP_NAME`
+- `APP_API_KEY`
+
+## Observacao sobre a imagem
+
+O workflow publica apenas a tag `latest`, o que ajuda a manter uma unica imagem ativa no fluxo do projeto.

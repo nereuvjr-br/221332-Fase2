@@ -1,84 +1,64 @@
-# imports para técnicas de morfologia 
-import spacy
+import os
+
 import nltk
-
-nltk.download('wordnet', quiet=True)
-nltk.download('omw-1.4', quiet=True)
-nltk.download('punkt', quiet=True)
-nltk.download('punkt_tab', quiet=True)
-
+import spacy
 from nltk.stem import PorterStemmer
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
-
-# Análise de sentimento léxica 
+from sklearn.feature_extraction.text import TfidfVectorizer
 from textblob import TextBlob
 
-# Vetorização 
-from sklearn.feature_extraction.text import TfidfVectorizer
+for package in ("wordnet", "omw-1.4", "punkt", "punkt_tab"):
+    nltk.download(package, quiet=True)
 
-# Imports para técnicas de sintaxe 
-import spacy
 
-# Carrega modelo spaCy ( - Célula 5: nlp = spacy.load("en_core_web_sm"))
-nlp = spacy.load("en_core_web_sm")
+def load_spacy_model():
+    model_name = os.getenv("SPACY_MODEL", "en_core_web_sm")
+    try:
+        return spacy.load(model_name)
+    except OSError as exc:
+        raise RuntimeError(
+            f"Modelo spaCy '{model_name}' nao encontrado. Execute "
+            f"'python -m spacy download {model_name}'."
+        ) from exc
 
-# Corpus base para o vectorizer 
+
+nlp = load_spacy_model()
+
 corpus = [
     "cloud computing is scalable",
-    "AI is transforming cloud services"
+    "AI is transforming cloud services",
 ]
 
-# Função da biblioteca Scikit Learn para vetorização de texto 
 vectorizer = TfidfVectorizer()
 vectorizer.fit(corpus)
 
 
 def process_pipeline(text: str) -> dict:
-    """
-    Pipeline de NLP com as técnicas ensinadas na .
-    Segue a mesma sequência do notebook .
-    """
-
-    # --- Morphologia ---
-
-    # Exemplo de uso da técnica stemming 
+    """Executa o pipeline de NLP usado pela API."""
     stemmer = PorterStemmer()
-
-    # Exemplo de uso da técnica Lematização 
     lemmatizer = WordNetLemmatizer()
 
-    # Tokenização com NLTK 
     tokens = word_tokenize(text)
+    stems = [stemmer.stem(token) for token in tokens]
+    lemmas = [lemmatizer.lemmatize(token) for token in tokens]
 
-    # Stemming de cada token
-    stems = [stemmer.stem(t) for t in tokens]
-
-    # Lematização de cada token
-    lemmas = [lemmatizer.lemmatize(t) for t in tokens]
-
-    # --- Sintaxe ---
-
-    # Exemplo de uso da técnica de análise sintática Part-Of-Speech 
     doc = nlp(text)
     pos_tags = [
-        {"token": token.text, "pos": token.pos_, "dep": token.dep_, "head": token.head.text}
+        {
+            "token": token.text,
+            "pos": token.pos_,
+            "dep": token.dep_,
+            "head": token.head.text,
+        }
         for token in doc
     ]
-
-    # Exemplo de uso da técnica de tokenização com spaCy 
     tokens_spacy = [token.text for token in doc]
 
-    # --- Vetorização ---
-
-    # Função da biblioteca Scikit Learn para vetorização de texto 
-    X = vectorizer.transform([text])
+    matrix = vectorizer.transform([text])
     feature_names = vectorizer.get_feature_names_out()
-    vector = dict(zip(feature_names, [round(v, 4) for v in X.toarray()[0]]))
+    vector = dict(zip(feature_names, [round(value, 4) for value in matrix.toarray()[0]]))
 
-    # --- Sentimento ---
-
-    # Análise de sentimento léxica 
     analysis = TextBlob(text)
     polarity = analysis.sentiment.polarity
     subjectivity = analysis.sentiment.subjectivity
@@ -101,12 +81,13 @@ def process_pipeline(text: str) -> dict:
         "sentimento": {
             "classificacao": sentimento,
             "polaridade": round(polarity, 4),
-            "subjetividade": round(subjectivity, 4)
-        }
+            "subjetividade": round(subjectivity, 4),
+        },
     }
 
 
 if __name__ == "__main__":
-    resultado = process_pipeline("The new API is amazing")
     import json
+
+    resultado = process_pipeline("The new API is amazing")
     print(json.dumps(resultado, indent=2, ensure_ascii=False))
