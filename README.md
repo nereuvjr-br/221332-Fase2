@@ -1,128 +1,486 @@
 # 221332 - Projetar Aplicacoes Baseadas em IA na Nuvem
 
-## Fase 2
+## 🎬 Fase 2 - API de Análise de Sentimento
 
-Este repositorio contem a evolucao da API da fase 1 para atender os requisitos da fase 2:
+API REST de **análise de sentimento de sinopses de filmes** com NLP avançado, autenticação segura, containerização Docker e deploy automático na nuvem.
 
-- API REST documentada com FastAPI
-- autenticacao por chave de API
-- containerizacao com Docker
-- pipeline de CI com GitHub Actions
-- deploy manual para Heroku usando imagem publicada no Docker Hub
+### Características Principais
 
-## Integrantes
+✅ **API REST moderna** com FastAPI documentada automaticamente (Swagger)  
+✅ **Autenticação por chave de API** com validação segura  
+✅ **Pipeline NLP completo:** tokenização, stemming, lemmatização, POS tags, TF-IDF, análise de sentimento  
+✅ **Containerização Docker** com imagem otimizada  
+✅ **CI/CD automático** com GitHub Actions (testes, build, deploy)  
+✅ **Deploy Heroku** via Docker Hub registry  
+
+### 👥 Integrantes
 
 - Alysson Leandro Nascimento de Oliveira
 - Edcarla Sousa de Jesus
 - Nereu Necholson Vieira de Lacerda Junior
 
-## Estrutura
+### 📁 Estrutura do Projeto
 
-- `api.py`: aplicacao FastAPI e rotas
-- `preprocessing.py`: pipeline de NLP
-- `dataset_tmdb_completo.csv`: base usada pela API
-- `221332_PROJETAR_APLICACOES_BASEADAS_EM_IA_NA_NUVEM.ipynb`: notebook da entrega
-- `Dockerfile`: imagem da aplicacao
-- `.github/workflows/ci.yml`: build e testes
-- `.github/workflows/deploy-heroku.yml`: publicacao no Docker Hub e deploy manual no Heroku
+```
+.
+├── api.py                                    # Aplicação FastAPI e rotas
+├── preprocessing.py                          # Pipeline de NLP
+├── dataset_tmdb_completo.csv                 # Base de dados (5.000+ filmes)
+├── requirements.txt                          # Dependências Python
+├── Dockerfile                                # Imagem Docker otimizada
+├── 221332_PROJETAR_APLICACOES_BASEADAS_EM_IA_NA_NUVEM.ipynb
+├── README.md
+└── tests/
+    └── test_api.py                           # Testes unitários pytest
 
-## Requisitos
+## 🛠 Requisitos
 
-- Python 3.11+
-- Docker
+- **Python 3.11+**
+- **pip** ou **poetry** para gerenciar dependências
+- **Docker** (opcional, para containerização)
 
-Instalacao local:
+### Dependências Principais
+
+- `fastapi` - framework web assíncrono
+- `uvicorn` - servidor ASGI
+- `spacy` - NLP industrial
+- `nltk` - biblioteca de processamento de linguagem natural
+- `textblob` - análise de sentimento
+- `scikit-learn` - machine learning (TF-IDF)
+- `pandas` - manipulação de dados
+
+---
+
+## ⚡ Início Rápido
+
+### 1️⃣ Instalação Local
 
 ```bash
+# Clonar repositório
+git clone https://github.com/seu-usuario/221332-fase2.git
+cd 221332-fase2
+
+# Criar ambiente virtual (opcional mas recomendado)
+python -m venv venv
+# Windows
+venv\Scripts\activate
+# Linux/macOS
+source venv/bin/activate
+
+# Instalar dependências
 pip install -r requirements.txt
+
+# Baixar modelos NLP
 python -m spacy download en_core_web_sm
-python api.py
 ```
 
-## Variaveis de ambiente
+### 2️⃣ Executar Localmente
 
-- `API_KEY`: chave usada nas rotas protegidas
-- `PORT`: porta da aplicacao
-- `DATASET_PATH`: caminho alternativo para o dataset
-
-Se `API_KEY` nao for definida, a aplicacao usa `dev-api-key` para facilitar testes locais.
-
-## Execucao local
+**Com variável de ambiente customizada:**
 
 ```bash
-$env:API_KEY="minha-chave"
+# Windows (PowerShell)
+$env:API_KEY="sua-chave-segura"
+$env:PORT="8000"
+python api.py
+
+# Windows (CMD)
+set API_KEY=sua-chave-segura
+set PORT=8000
+python api.py
+
+# Linux/macOS
+export API_KEY="sua-chave-segura"
 python api.py
 ```
 
-Documentacao Swagger:
+**Sem customização (usa valores padrão):**
 
-- `http://localhost:8000/docs`
+```bash
+python api.py
+```
 
-## Executando com Docker
+### 3️⃣ Acessar Documentação
 
-Build:
+Abra a documentação interativa do Swagger:
+
+- **Swagger UI:** http://localhost:8000/docs
+- **ReDoc:** http://localhost:8000/redoc
+
+---
+
+## 🐳 Executando com Docker
+
+### Build da imagem
 
 ```bash
 docker build -t 221332-fase2-api .
 ```
 
-Run:
+### Run do container
 
 ```bash
-docker run -p 8000:8000 -e PORT=8000 -e API_KEY=minha-chave 221332-fase2-api
+# Com todas as variáveis de ambiente
+docker run -p 8000:8000 \
+  -e PORT=8000 \
+  -e API_KEY="sua-chave-segura" \
+  -e DATASET_PATH="dataset_tmdb_completo.csv" \
+  221332-fase2-api
+
+# Modo detached (background)
+docker run -d -p 8000:8000 \
+  -e API_KEY="sua-chave-segura" \
+  221332-fase2-api
 ```
 
-## Endpoints
+A imagem é otimizada com:
+- Base `python:3.11-slim` (60MB)
+- Cache pip para renovação rápida
+- Modelos NLP pré-baixados
 
-Publicos:
+---
 
-- `GET /`
-- `GET /health`
+## 🔌 Endpoints
 
-Protegidos com header `X-API-Key`:
+### Públicos (sem autenticação)
 
-- `GET /filme-aleatorio`
-- `POST /analisar`
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/` | Status da API e informações gerais |
+| `GET` | `/health` | Healthcheck para CI/CD e monitoramento |
 
-Exemplo de chamada:
+### Protegidos (requerem header `X-API-Key`)
 
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/filme-aleatorio` | Retorna um filme aleatório com sinopses em PT e EN |
+| `POST` | `/analisar` | Executa análise de sentimento completa no texto |
+
+---
+
+## 📚 Exemplos de Uso
+
+### 1. Status da API
+
+**Requisição:**
+```bash
+curl http://localhost:8000/
+```
+
+**Resposta:**
+```json
+{
+  "status": "online",
+  "descricao": "API 221332 - Fase 2",
+  "docs": "/docs",
+  "healthcheck": "/health",
+  "seguranca": "Envie o cabecalho X-API-Key nas rotas protegidas.",
+  "total_filmes": 5043
+}
+```
+
+### 2. Healthcheck
+
+```bash
+curl http://localhost:8000/health
+# Resposta: {"status": "healthy"}
+```
+
+### 3. Obter Filme Aleatório
+
+**Requisição (cURL - Windows):**
+```bash
+curl -X GET "http://localhost:8000/filme-aleatorio" ^
+  -H "X-API-Key: dev-api-key"
+```
+
+**Requisição (Python):**
+```python
+import requests
+
+headers = {"X-API-Key": "dev-api-key"}
+response = requests.get("http://localhost:8000/filme-aleatorio", headers=headers)
+print(response.json())
+```
+
+### 4. Analisar Sentimento (Principal)
+
+**Requisição (cURL - Windows):**
 ```bash
 curl -X POST "http://localhost:8000/analisar" ^
   -H "Content-Type: application/json" ^
-  -H "X-API-Key: minha-chave" ^
-  -d "{\"texto\":\"The movie was amazing\"}"
+  -H "X-API-Key: dev-api-key" ^
+  -d "{\"texto\":\"The movie was absolutely amazing\"}"
 ```
 
-## GitHub Actions
+**Requisição (Python):**
+```python
+import requests
 
-### CI
+headers = {
+    "X-API-Key": "dev-api-key",
+    "Content-Type": "application/json"
+}
 
-O workflow `ci.yml`:
+response = requests.post(
+    "http://localhost:8000/analisar",
+    headers=headers,
+    json={"texto": "The movie was absolutely amazing"}
+)
 
-- instala as dependencias
-- baixa os recursos de NLP
-- valida os arquivos Python
-- roda os testes
-- monta a imagem Docker
+result = response.json()
+print(f"Sentimento: {result['sentimento']['classificacao']}")
+print(f"Polaridade: {result['sentimento']['polaridade']}")
+```
 
-### Deploy manual
+**Resposta (resumida):**
+```json
+{
+  "texto_original": "The movie was absolutely amazing",
+  "tokens_nltk": ["The", "movie", "was", "absolutely", "amazing"],
+  "stems": ["the", "movi", "wa", "absolut", "amaz"],
+  "lemmas": ["The", "movie", "be", "absolutely", "amazing"],
+  "pos_tags": [
+    {"token": "movie", "pos": "NOUN", "dep": "nsubj", "head": "was"},
+    {"token": "was", "pos": "AUX", "dep": "ROOT", "head": "was"},
+    {"token": "amazing", "pos": "ADJ", "dep": "acomp", "head": "was"}
+  ],
+  "vetor_tfidf": {"absolutely": 0.5, "amazing": 0.5},
+  "sentimento": {
+    "classificacao": "Positivo",
+    "polaridade": 0.8,
+    "subjetividade": 0.75
+  }
+}
+```
 
-O workflow `deploy-heroku.yml`:
+---
 
-- publica a imagem `latest` no Docker Hub
-- configura a stack `container` no Heroku
-- envia a imagem para `registry.heroku.com`
-- faz o release manual via `workflow_dispatch`
+## 🧠 Pipeline de NLP
 
-## GitHub Secrets necessarios
+O endpoint `/analisar` executa:
 
-- `DOCKERHUB_USERNAME`
-- `DOCKERHUB_TOKEN`
-- `HEROKU_API_KEY`
-- `HEROKU_EMAIL`
-- `HEROKU_APP_NAME`
-- `APP_API_KEY`
+| Etapa | Lib | Descrição |
+|-------|-----|-----------|
+| **Tokenização** | NLTK | Divide texto em palavras |
+| **Stemming** | NLTK | Reduz palavras à raiz (running → run) |
+| **Lemmatização** | NLTK/spaCy | Forma canônica (running → run) |
+| **POS Tags** | spaCy | Part-of-speech (NOUN, VERB, ADJ...) |
+| **Dependências** | spaCy | Relações entre palavras na sentença |
+| **TF-IDF** | scikit-learn | Vetor numérico de relevância das palavras |
+| **Sentimento** | TextBlob | Classificação e scores (polaridade 0-1, subjetividade 0-1) |
 
-## Observacao sobre a imagem
+---
 
-O workflow publica apenas a tag `latest`, o que ajuda a manter uma unica imagem ativa no fluxo do projeto.
+## 🔐 Variáveis de Ambiente
+
+| Variável | Padrão | Descrição |
+|----------|--------|-----------|
+| `API_KEY` | `dev-api-key` | Chave para endpoints protegidos |
+| `PORT` | `8000` | Porta da aplicação |
+| `DATASET_PATH` | `dataset_tmdb_completo.csv` | Caminho do CSV com filmes |
+| `SPACY_MODEL` | `en_core_web_sm` | Modelo spaCy |
+
+---
+
+## 🧪 Testes
+
+### Executar testes
+
+```bash
+pytest tests/ -v
+```
+
+### Cobertura
+
+```bash
+pytest tests/ --cov=api --cov-report=html
+```
+
+**Testes incluídos:**
+- ✓ Endpoint `GET /` retorna status
+- ✓ Endpoint `GET /health` retorna healthy
+- ✓ Endpoint `/analisar` requer autenticação
+- ✓ Endpoint `/analisar` processa com sucesso
+
+---
+
+## 🚀 GitHub Actions & CI/CD
+
+### CI Workflow (`ci.yml`)
+
+Executado em cada **push** ou **pull request**:
+
+```mermaid
+graph LR
+    A[Push] --> B[Install deps]
+    B --> C[Download NLP models]
+    C --> D[Run pytest]
+    D --> E[Build Docker image]
+    E --> F[✓ Success]
+```
+
+**Passos:**
+1. Instala dependências Python
+2. Baixa modelos spaCy e NLTK
+3. Executa testes unitários
+4. Constrói imagem Docker
+
+### Deploy Workflow (`deploy-heroku.yml`)
+
+Acionado manualmente via `workflow_dispatch`:
+
+```mermaid
+graph LR
+    A[Trigger] --> B[Build image]
+    B --> C[Push to Docker Hub]
+    C --> D[Tag 'latest']
+    D --> E[Configure Heroku]
+    E --> F[Deploy]
+    F --> G[✓ Live]
+```
+
+**Passos:**
+1. Faz build da imagem Docker
+2. Autentica no Docker Hub
+3. Publica com tag `latest`
+4. Configura Heroku para container stack
+5. Deploy manual (requer aprovação)
+
+### Secrets Necessários no GitHub
+
+Configure em **Settings → Secrets and variables → Actions:**
+
+```
+DOCKERHUB_USERNAME      # seu usuário Docker Hub
+DOCKERHUB_TOKEN         # seu token/senha Docker Hub
+HEROKU_API_KEY          # chave de API do Heroku
+HEROKU_EMAIL            # email da conta Heroku
+HEROKU_APP_NAME         # nome da app no Heroku
+APP_API_KEY             # API_KEY da aplicação (produção)
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Erro: "Modelo spaCy não encontrado"
+
+```bash
+python -m spacy download en_core_web_sm
+```
+
+### Erro: "API_KEY inválida"
+
+Verifique se o header está correto:
+```bash
+-H "X-API-Key: sua-chave-exata"
+```
+
+### Erro ao conectar no Docker
+
+```bash
+# Verifique se está rodando
+docker ps
+
+# Veja os logs
+docker logs <container-id>
+```
+
+### Dataset não encontrado
+
+```bash
+# Verifique o caminho
+ls dataset_tmdb_completo.csv
+
+# Ou configure a variável
+export DATASET_PATH="/caminho/para/dataset.csv"
+```
+
+---
+
+## 📦 Deploy no Heroku
+
+### Método 1: Manualmente via GitHub Actions
+
+1. Vá para **GitHub → Actions**
+2. Selecione **"Deploy to Heroku"**
+3. Clique em **"Run workflow"**
+4. Aguarde o deploy
+
+### Método 2: CLI local
+
+```bash
+# Login no Heroku
+heroku login
+
+# Crie uma app
+heroku create sua-app-name
+
+# Configure as variáveis
+heroku config:set API_KEY="sua-chave" -a sua-app-name
+
+# Deploy direto
+git push heroku main
+```
+
+### Testar em Produção
+
+```bash
+curl https://sua-app-name.herokuapp.com/health
+
+curl -X POST "https://sua-app-name.herokuapp.com/analisar" \
+  -H "X-API-Key: sua-chave" \
+  -H "Content-Type: application/json" \
+  -d "{\"texto\":\"Amazing movie\"}"
+```
+
+---
+
+## 📊 Arquitetura
+
+```
+┌─────────────────────────────────────────────────┐
+│           Cliente HTTP                          │
+└────────────────┬────────────────────────────────┘
+                 │ JSON + X-API-Key
+                 ▼
+         ┌───────────────────┐
+         │   FastAPI App     │
+         │   (api.py)        │
+         └────────┬──────────┘
+                  │
+        ┌─────────┴──────────┐
+        │                    │
+        ▼                    ▼
+    ┌─────────┐      ┌──────────────┐
+    │ Dataset │      │NLP Pipeline  │
+    │(TMDB)   │      │(preprocessing)
+    └─────────┘      └──────────────┘
+                            │
+        ┌───────────────────┼───────────────────┐
+        │                   │                   │
+        ▼                   ▼                   ▼
+    ┌────────┐       ┌──────────┐       ┌───────────┐
+    │ spaCy  │       │  NLTK    │       │ TextBlob  │
+    │ Models │       │ Tokenize │       │ Sentiment │
+    └────────┘       └──────────┘       └───────────┘
+```
+
+---
+
+## 📝 Licença
+
+Projeto acadêmico - Aluno IFCE
+
+## 🔗 Links Úteis
+
+- [FastAPI Docs](https://fastapi.tiangolo.com/)
+- [spaCy Documentation](https://spacy.io/)
+- [NLTK Book](https://www.nltk.org/book/)
+- [Docker Hub](https://hub.docker.com/)
+- [Heroku Documentation](https://devcenter.heroku.com/)
+
+## 🤝 Contribuições
+
+Sugestões e melhorias são bem-vindas! Abra uma **issue** ou **pull request**.
