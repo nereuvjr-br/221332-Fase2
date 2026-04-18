@@ -11,6 +11,13 @@ Este repositorio contem a evolucao da API da fase 1 para atender os requisitos d
 - publicacao da imagem no Docker Hub
 - deploy manual no Render via GitHub Actions
 
+## Links do projeto
+
+- API publica: [https://two21332-fase2.onrender.com](https://two21332-fase2.onrender.com)
+- Swagger: [https://two21332-fase2.onrender.com/docs](https://two21332-fase2.onrender.com/docs)
+- Healthcheck: [https://two21332-fase2.onrender.com/health](https://two21332-fase2.onrender.com/health)
+- Docker Hub: [https://hub.docker.com/r/nereuvljr/221332-fase1](https://hub.docker.com/r/nereuvljr/221332-fase1)
+
 ## Integrantes
 
 - Alysson Leandro Nascimento de Oliveira
@@ -46,6 +53,12 @@ python api.py
 - `PORT`: porta da aplicacao
 - `DATASET_PATH`: caminho alternativo para o dataset
 
+Chave configurada para uso atual da API publicada:
+
+```text
+API_KEY=dd9cb1d3ffb566082432d8d1077ca2f8
+```
+
 Se `API_KEY` nao for definida, a aplicacao usa `dev-api-key` para facilitar testes locais.
 
 ## Execucao local
@@ -58,6 +71,7 @@ python api.py
 Documentacao Swagger:
 
 - `http://localhost:8000/docs`
+- `https://two21332-fase2.onrender.com/docs`
 
 ## Executando com Docker
 
@@ -90,7 +104,16 @@ Exemplo de chamada:
 ```bash
 curl -X POST "http://localhost:8000/analisar" ^
   -H "Content-Type: application/json" ^
-  -H "X-API-Key: minha-chave" ^
+  -H "X-API-Key: dd9cb1d3ffb566082432d8d1077ca2f8" ^
+  -d "{\"texto\":\"The movie was amazing\"}"
+```
+
+Exemplo em producao:
+
+```bash
+curl -X POST "https://two21332-fase2.onrender.com/analisar" ^
+  -H "Content-Type: application/json" ^
+  -H "X-API-Key: dd9cb1d3ffb566082432d8d1077ca2f8" ^
   -d "{\"texto\":\"The movie was amazing\"}"
 ```
 
@@ -129,13 +152,13 @@ Esse fluxo atende ao requisito de implantacao manual. O workflow so roda quando 
 2. Aponte a imagem para:
 
 ```text
-docker.io/SEU_USUARIO_DOCKERHUB/221332-fase2-api:latest
+docker.io/nereuvljr/221332-fase1:latest
 ```
 
 3. Configure a variavel de ambiente:
 
 ```text
-API_KEY=sua-chave-de-producao
+API_KEY=dd9cb1d3ffb566082432d8d1077ca2f8
 ```
 
 4. Copie o `Deploy Hook` em `Settings` no Render.
