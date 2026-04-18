@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: 221332-fase2-api
+  IMAGE_NAME: 221332-fase1
 
 jobs:
   publish-and-deploy:
